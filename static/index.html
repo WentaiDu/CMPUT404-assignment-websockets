@@ -1,4 +1,10 @@
 <!DOCTYPE HTML>
+
+<!-- # Adapted from WebsocketExamples: https://github.com/abramhindle/WebSocketsExamples/blob/master/static/chat.html
+# Reference from https://github.com/jha8/CMPUT404-assignment-websockets/blob/master/static/index.html
+# and https://github.com/colinchoix/CMPUT404-assignment-websockets/blob/master/static/index.html
+# also from my assignment4 https://github.com/WentaiDu/CMPUT404-assignment-ajax -->
+
 <html> 
   <head> 
     <title>Websockets Assignment</title> 
@@ -22,17 +28,20 @@
     "/>
     <script src="json2.js"></script>
   </head> 
-  <body bgcolor="white" height="100%" width="100%"> 
-    <div id="debug"></div>
+  <body bgcolor="black" height="100%" width="100%"> 
     <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
-
+    <span><button class="color" onclick="brushColor = 'white';" style="background-color:white;"" type="button"></button></span>
+    <span><button class="color" onclick="brushColor = 'red';" style="background-color:red;"" type="button"></button></span>
+    <span><button class="color" onclick="brushColor = 'yellow';" style="background-color:yellow;"" type="button"></button></span>
+    <span><button class="color" onclick="brushColor = 'green';" style="background-color:green;"" type="button"></button></span>    
     <script>
-      // Fix me
 var canvas = document.getElementById('c');
 var host = window.location.host;
 var context = canvas.getContext("2d");
-var W = canvas.width  = window.innerWidth-6;
-var H = canvas.height = window.innerHeight-50;
+var W = canvas.width  = window.innerWidth-20;
+var H = canvas.height = window.innerHeight-160;
+var brushColor = 'violet'
+var canvasColor = "#000";
 var wscounter = 0;
 var socket;
 
@@ -40,15 +49,15 @@ function debug(str) {
     var debugDiv = document.getElementById('debug');
     debugDiv.innerHTML = "" + str;
 }
-debug("Test");
+// debug("Test");
 
 world = {};
 
 //XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
     with(context) {
-        beginPath();                
-        lineWidth = 3;
+        beginPath();              
+        lineWidth = 10;
         var x = entity["x"];
         var y = entity["y"];
         //moveTo(x,y);
@@ -58,6 +67,13 @@ function drawCircle(context,entity) {
         stroke();                                
     }
 }
+
+
+
+
+
+
+
 
 function prepEntity(entity) {
     if (!entity["colour"]) {
@@ -77,6 +93,8 @@ function clearFrame() {
     }
 
 }
+
+
 
 // This actually draws the frame
 function renderFrame() {
@@ -125,6 +143,10 @@ function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    var update = {}
+    update[entity] = data;
+    // Send point to server
+    socket.send(JSON.stringify(update));
 }
 var counter = 0;
 function addEntityWithoutName(data) {
@@ -231,16 +253,18 @@ mouse = (function() {
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':brushColor,
+                          'radius':8});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':brushColor,
+                          'radius':8});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':brushColor,
+                          'radius':5});
 });
 
 
@@ -254,6 +278,9 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        debug("WS onopen: " + wscounter);
+        socket.send(JSON.stringify({ "WS onopen": "GET world" }));
+        wscounter++;
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -261,7 +288,12 @@ function wsSetup() {
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            //XXX: TODO What are you going to do here?         
+            var message = JSON.parse(msg.data); 
+            for (let entity in message) {
+                world[entity] = message[entity];
+            } 
+            drawNextFrame();   
         } catch (e) {
             alert("socket on message: " + e);
         }

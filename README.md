@@ -59,3 +59,12 @@ Contributors
 * Mark Galloway
 * Abram Hindle
 * Cole Mackenzie
+
+
+
+Reference:
+https://github.com/abramhindle/WebSocketsExamples/blob/master/static/chat.html 
+https://github.com/jha8/CMPUT404-assignment-websockets/blob/master/static/index.html 
+https://github.com/colinchoix/CMPUT404-assignment-websockets/blob/master/static/index.html 
+https://github.com/WentaiDu/CMPUT404-assignment-ajax 
+https://github.com/abramhindle/WebSocketsExamples/blob/master/chat.py 
